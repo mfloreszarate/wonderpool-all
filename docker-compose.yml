@@ -1,0 +1,68 @@
+services:
+  backend:
+    build: ./wonderpool-api
+    container_name: backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      FRONT_URL: http://localhost
+      DATABASE_USER: wonderpool_user
+      DATABASE_PASSWORD: wonderpool_pass
+      DATABASE_NAME: wonderpool
+      DATABASE_URL: db
+      DATABASE_PORT: 3306
+      STAGE: development
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRATION: 24h
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  frontend:
+    build: ./wonderpool-admin
+    container_name: frontend
+    restart: always
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./ngnix/nginx-simple.conf:/etc/nginx/nginx.conf:ro
+      - ./ngnix/empty.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_123
+      MYSQL_DATABASE: wonderpool
+      MYSQL_USER: wonderpool_user
+      MYSQL_PASSWORD: wonderpool_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+
+
+networks:
+  app-network:
+    driver: bridge
