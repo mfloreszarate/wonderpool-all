@@ -1,13 +1,14 @@
 services:
   backend:
-    build: ./wonderpool-api
+    #    build: ./wonderpool-api
+    image: ghcr.io/mfloreszarate/wonderpool-api:8dce8d64a01846b774a09009425357e6fe843b1a
     container_name: backend
     restart: always
     ports:
       - "3000:3000"
     environment:
       PORT: 3000
-      FRONT_URL: http://vps-5316385-x.dattaweb.com
+      FRONT_URL: http://localhost
       DATABASE_USER: wonderpool_user
       DATABASE_PASSWORD: wonderpool_pass
       DATABASE_NAME: wonderpool
@@ -20,29 +21,15 @@ services:
       - db
     networks:
       - app-network
-
   frontend:
-    build: ./wonderpool-admin
+    #    build: ./wonderpool-admin
+    image: ghcr.io/mfloreszarate/wonderpool-admin:64ba0ce0235c7bba1762c6ec8934a726184209da
     container_name: frontend
-    restart: always
-    networks:
-      - app-network
-
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    restart: always
     ports:
-      - "80:80"
-    volumes:
-      - ./ngnix/nginx-simple.conf:/etc/nginx/nginx.conf:ro
-      - ./ngnix/empty.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - backend
-      - frontend
+      - "8090:80"
+    restart: always
     networks:
       - app-network
-
   db:
     image: mysql:8.0
     container_name: mysql
@@ -58,7 +45,6 @@ services:
       - db-data:/var/lib/mysql
     networks:
       - app-network
-
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
